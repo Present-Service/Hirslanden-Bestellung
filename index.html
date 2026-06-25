@@ -656,6 +656,14 @@
         <option value="salem-spital">Salem-Spital</option>
       </select>
     </div>
+    <div class="field-group">
+      <label for="lieferadresse" style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--lsf-braun); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <span style="background:var(--lsf-rosa); color:white; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:0.7rem; flex-shrink:0;">!</span>
+        Lieferadresse
+      </label>
+      <textarea id="lieferadresse" name="lieferadresse" required placeholder="Klinikname&#10;Abteilung / Station&#10;Strasse und Hausnummer&#10;PLZ und Ort" style="min-height:110px;"></textarea>
+    </div>
+
 
     <div class="order-boxes">
       <div class="order-box baby-bag ribbon-wrap">
@@ -664,13 +672,13 @@
         <div class="box-body">
           <div class="box-title">Baby Bag</div>
           <div class="box-desc">Halbprivat- &amp; privatversicherte Patientinnen</div>
-          <label class="qty-label" for="qty-bag">Anzahl Kartons</label>
+          <label class="qty-label" for="qty-bag" style="color:#c0392b;">Anzahl Kartons</label>
           <div class="qty-row">
-            <button class="qty-btn" type="button" onclick="changeQty('qty-bag',-1)" aria-label="Weniger">&#8722;</button>
-            <input type="number" id="qty-bag" name="qty-bag" min="0" step="1" value="0">
-            <button class="qty-btn" type="button" onclick="changeQty('qty-bag',1)" aria-label="Mehr">&#43;</button>
+            <button class="qty-btn" type="button" disabled aria-label="Weniger" style="background:#f9e0e0; border-color:#e08080; color:#c0392b; cursor:not-allowed; opacity:0.7;">&#8722;</button>
+            <input type="number" id="qty-bag" name="qty-bag" min="0" step="1" value="0" disabled style="background:#f9e0e0; border-color:#e08080; color:#c0392b; cursor:not-allowed; opacity:0.7;">
+            <button class="qty-btn" type="button" disabled aria-label="Mehr" style="background:#f9e0e0; border-color:#e08080; color:#c0392b; cursor:not-allowed; opacity:0.7;">&#43;</button>
           </div>
-          <div class="unit-note">1 Karton = 6 Baby Bags</div>
+          <div class="unit-note" style="color:#c0392b; font-weight:600;">Bestellung demnächst möglich</div>
         </div>
       </div>
 
@@ -689,7 +697,7 @@
         </div>
       </div>
     </div>
-    <div class="validation-note" id="qty-validation">Bitte mindestens eine Bestellmenge angeben.</div>
+    <div class="validation-note" id="qty-validation">Bitte Anzahl Baby Boxes angeben.</div>
 
     <div id="summary-area" style="display:none; margin-bottom:20px;">
       <div style="background:var(--lsf-beige); border-radius:12px; padding:16px 20px; font-family:Quicksand,sans-serif;">
@@ -821,6 +829,7 @@ updateCountdown();
 setInterval(updateCountdown, 60000);
 
 function changeQty(id, delta) {
+  if (id === 'qty-bag') return;
   const el = document.getElementById(id);
   const val = Math.max(0, (parseInt(el.value) || 0) + delta);
   el.value = val;
@@ -867,7 +876,10 @@ function submitOrder() {
   if (!klinikEl.value) { klinikEl.style.borderColor="var(--lsf-rosa)"; klinikEl.focus(); ok=false; }
   else klinikEl.style.borderColor="";
   const qv = document.getElementById("qty-validation");
-  if (bag===0 && box===0) { qv.style.display="block"; ok=false; } else qv.style.display="none";
+  if (box===0) { qv.style.display="block"; ok=false; } else qv.style.display="none";
+  const ae = document.getElementById("lieferadresse");
+  const addr = ae.value.trim();
+  if (!addr) { ae.style.borderColor="var(--lsf-rosa)"; ok=false; } else ae.style.borderColor="";
   const ne = document.getElementById("kontakt-name");
   if (!name) { ne.style.borderColor="var(--lsf-rosa)"; ok=false; } else ne.style.borderColor="";
   const me = document.getElementById("kontakt-email");
@@ -875,7 +887,8 @@ function submitOrder() {
   if (!ok) return;
   const subj = encodeURIComponent("LetsFamily Bestellung – " + klinik + " – " + new Date().toLocaleDateString("de-CH"));
   let body = "LetsFamily Monatsbestellung\n========================================\n\n";
-  body += "Klinik:      " + klinik + "\n\n";
+  body += "Klinik:      " + klinik + "\n";
+  body += "Lieferadresse:\n" + addr.split("\n").map(l => "  " + l).join("\n") + "\n\n";
   body += "BESTELLMENGEN\n--------------------------------\n";
   body += "Baby Bag (halbprivat/privat):\n  " + bag + " Karton" + (bag!==1?"s":"") + " = " + (bag*6) + " Stück\n\n";
   body += "Baby Box (allgemein versichert):\n  " + box + " Karton" + (box!==1?"s":"") + " = " + (box*6) + " Stück\n\n";
